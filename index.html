@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>html canvas painting</title>
+</head>
+
+<body>
+<canvas id="canvas">
+    Your browser does not support canvas element.
+</canvas>
+</body>
+
+<script>
+    var el = document.getElementById("canvas");
+    el.width = window.innerWidth;
+    el.height = window.innerHeight;
+
+    var isTouch = 'createTouch' in document;//判断是否为触摸设备
+
+    if (window.navigator.msPointerEnabled) {
+        el.addEventListener('MSPointerDown', handleStart, false);
+    } else {
+        el.addEventListener('touchstart', handleStart, false);
+
+        document.addEventListener('mousedown', handleStart, false);
+    }
+
+    //上一次触摸坐标
+    var lastX;
+    var lastY;
+    //判断是否正在画图标志
+    var paint = false;
+    //画布设置
+    var ctx = el.getContext("2d");
+    ctx.lineWidth = 4;//画笔粗细
+    ctx.strokeStyle = "#000";//画笔颜色
+
+    function handleStart(event) {
+        event.preventDefault();
+
+        if (isTouch) {
+            lastX = event.touches[0].clientX;
+            lastY = event.touches[0].clientY;
+        } else {
+            lastX = event.clientX;
+            lastY = event.clientY;
+        }
+
+        if (window.navigator.msPointerEnabled) {
+            el.addEventListener('MSPointerMove', handleMove, false);
+            el.addEventListener('MSPointerUp', handleEnd, false);
+        } else {
+            el.addEventListener('touchmove', handleMove, false);
+            el.addEventListener('touchend', handleEnd, false);
+            el.addEventListener('touchcancel', handleEnd, false);
+
+            document.addEventListener('mousemove', handleMove, false);
+            document.addEventListener('mouseup', handleEnd, false);
+        }
+
+        paint = true;//开始画图
+        drawRound(lastX,lastY);
+    }
+
+    function handleMove(event) {
+        event.preventDefault();
+
+        if(paint){
+            if (isTouch) {
+                drawLine(lastX,lastY,event.touches[0].clientX,event.touches[0].clientY);
+                lastX = event.touches[0].clientX;
+                lastY = event.touches[0].clientY;
+            } else {
+                drawLine(lastX,lastY,event.clientX,event.clientY);
+                lastX = event.clientX;
+                lastY = event.clientY;
+            }
+        }
+    }
+
+    function handleEnd(event) {
+        event.preventDefault();
+
+        paint = false;
+    }
+
+    //画圆
+    function drawRound(x,y) {
+        ctx.fillStyle="#000";
+        ctx.beginPath();
+        ctx.arc(x,y,2,0,Math.PI*2,true);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    //画线
+    function drawLine(startX,startY,endX,endY) {
+        ctx.beginPath();
+        ctx.lineCap="round";
+        ctx.moveTo(startX,startY);
+        ctx.lineTo(endX,endY);
+        ctx.stroke();
+    }
+</script>
+
+</html>
